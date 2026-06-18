@@ -44,7 +44,32 @@ class RiskQuestion {
 
 class _QuizPageState extends State<QuizPage> {
   int currentPage = 0;
+  bool highContrast = false;
+
   final Map<int, Set<int>> selectedAnswers = {};
+
+  static const Color lavenderBackground = Color(0xFFFAF7FF);
+  static const Color lavenderDark = Color(0xFF6D5D8F);
+  static const Color lavenderMain = Color(0xFF8E7AB5);
+  static const Color lavenderLight = Color(0xFFEDE7F6);
+  static const Color lavenderBorder = Color(0xFFE3D8F1);
+  static const Color textDark = Color(0xFF2F2638);
+  static const Color textMuted = Color(0xFF675A73);
+
+  Color get pageBackground =>
+      highContrast ? Colors.black : lavenderBackground;
+
+  Color get cardBackground =>
+      highContrast ? Colors.black : Colors.white;
+
+  Color get primaryText =>
+      highContrast ? Colors.white : textDark;
+
+  Color get secondaryText =>
+      highContrast ? Colors.white70 : textMuted;
+
+  Color get borderColor =>
+      highContrast ? Colors.white : lavenderBorder;
 
   final List<RiskQuestion> questions = const [
     RiskQuestion(
@@ -281,6 +306,7 @@ class _QuizPageState extends State<QuizPage> {
   ];
 
   int get totalPages => (questions.length / 5).ceil();
+
   bool get isLastPage => currentPage == totalPages - 1;
 
   List<RiskQuestion> get visibleQuestions {
@@ -298,6 +324,7 @@ class _QuizPageState extends State<QuizPage> {
         return false;
       }
     }
+
     return true;
   }
 
@@ -343,11 +370,13 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   double get riskPercent {
-    return ((threatPercent * 0.6) + (vulnerabilityPercent * 0.4)).clamp(0, 100);
+    return ((threatPercent * 0.6) + (vulnerabilityPercent * 0.4))
+        .clamp(0, 100);
   }
 
   String get classification {
     final risk = riskPercent;
+
     if (risk < 20) return 'Muito Baixo';
     if (risk < 40) return 'Baixo';
     if (risk < 60) return 'Moderado';
@@ -374,7 +403,9 @@ class _QuizPageState extends State<QuizPage> {
       final exclusiveIndex =
           question.options.indexWhere((item) => item.exclusive);
 
-      if (exclusiveIndex != -1) current.remove(exclusiveIndex);
+      if (exclusiveIndex != -1) {
+        current.remove(exclusiveIndex);
+      }
 
       if (current.contains(optionIndex)) {
         current.remove(optionIndex);
@@ -396,8 +427,9 @@ class _QuizPageState extends State<QuizPage> {
         final selected = selectedAnswers[i] ?? {};
         answered.add({
           'question': questions[i].title,
-          'answers':
-              selected.map((index) => questions[i].options[index].title).toList(),
+          'answers': selected
+              .map((index) => questions[i].options[index].title)
+              .toList(),
         });
       }
 
@@ -428,6 +460,43 @@ class _QuizPageState extends State<QuizPage> {
     });
   }
 
+  void toggleContrast() {
+    setState(() {
+      highContrast = !highContrast;
+    });
+  }
+
+  void _quickExit() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Saída rápida'),
+          content: const Text(
+            'Deseja sair imediatamente da avaliação?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.loginPage,
+                  (route) => false,
+                );
+              },
+              child: const Text('Sair'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showIdentificationDialog(Map<String, dynamic> resultArguments) {
     showModalBottomSheet(
       context: context,
@@ -436,9 +505,11 @@ class _QuizPageState extends State<QuizPage> {
       builder: (context) {
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFF7FB),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          decoration: BoxDecoration(
+            color: highContrast ? Colors.black : lavenderBackground,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -447,32 +518,32 @@ class _QuizPageState extends State<QuizPage> {
                 width: 42,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5CAD5),
+                  color: highContrast ? Colors.white : lavenderBorder,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
               const SizedBox(height: 20),
-              const Icon(
+              Icon(
                 Icons.lock_outline_rounded,
-                color: Color(0xFFC54E82),
+                color: highContrast ? Colors.white : lavenderMain,
                 size: 42,
               ),
               const SizedBox(height: 14),
-              const Text(
+              Text(
                 'Você deseja se identificar?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF332033),
+                  color: primaryText,
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Você pode continuar de forma anônima ou informar seus dados para que apareçam no relatório final.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF5F4C66),
+                  color: secondaryText,
                   fontSize: 15,
                   height: 1.4,
                 ),
@@ -503,6 +574,17 @@ class _QuizPageState extends State<QuizPage> {
                   },
                   icon: const Icon(Icons.person_outline_rounded),
                   label: const Text('Quero me identificar'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor:
+                        highContrast ? Colors.white : lavenderMain,
+                    side: BorderSide(
+                      color: highContrast ? Colors.white : lavenderMain,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -527,29 +609,42 @@ class _QuizPageState extends State<QuizPage> {
           ),
           child: Container(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFF7FB),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            decoration: BoxDecoration(
+              color: highContrast ? Colors.black : lavenderBackground,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Dados para identificação',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF332033),
+                    color: primaryText,
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
+                Text(
+                  'Essas informações serão exibidas apenas no relatório gerado neste protótipo.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: secondaryText,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 18),
                 TextField(
                   controller: nameController,
+                  style: TextStyle(color: primaryText),
                   decoration: InputDecoration(
                     labelText: 'Nome completo',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: highContrast ? Colors.black : Colors.white,
+                    labelStyle: TextStyle(color: secondaryText),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -558,10 +653,12 @@ class _QuizPageState extends State<QuizPage> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: documentController,
+                  style: TextStyle(color: primaryText),
                   decoration: InputDecoration(
                     labelText: 'CPF ou documento',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: highContrast ? Colors.black : Colors.white,
+                    labelStyle: TextStyle(color: secondaryText),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -620,8 +717,26 @@ class _QuizPageState extends State<QuizPage> {
     final start = currentPage * 5;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7FB),
-      appBar: AppBar(title: const Text('Avaliação de Risco')),
+      backgroundColor: pageBackground,
+      appBar: AppBar(
+        title: const Text('Avaliação de Risco'),
+        backgroundColor: highContrast ? Colors.black : lavenderDark,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Alto contraste',
+            icon: Icon(
+              highContrast ? Icons.contrast : Icons.contrast_outlined,
+            ),
+            onPressed: toggleContrast,
+          ),
+          IconButton(
+            tooltip: 'Saída rápida',
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: _quickExit,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           _buildHeader(),
@@ -648,8 +763,16 @@ class _QuizPageState extends State<QuizPage> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF8E2F60), Color(0xFFC54E82)],
+        gradient: highContrast
+            ? null
+            : const LinearGradient(
+                colors: [lavenderDark, lavenderMain],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+        color: highContrast ? Colors.black : null,
+        border: Border.all(
+          color: highContrast ? Colors.white : Colors.transparent,
         ),
         borderRadius: BorderRadius.circular(26),
       ),
@@ -667,7 +790,42 @@ class _QuizPageState extends State<QuizPage> {
           const SizedBox(height: 6),
           const Text(
             'Violência Doméstica e Familiar Contra a Mulher',
-            style: TextStyle(color: Colors.white, height: 1.3, fontSize: 14),
+            style: TextStyle(
+              color: Colors.white,
+              height: 1.3,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: highContrast
+                  ? Border.all(color: Colors.white)
+                  : null,
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Suas respostas são confidenciais. Você poderá gerar o relatório de forma anônima.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 14),
           ClipRRect(
@@ -700,19 +858,44 @@ class _QuizPageState extends State<QuizPage> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(
-          left: BorderSide(color: Color(0xFFC54E82), width: 5),
+        color: cardBackground,
+        border: Border(
+          left: BorderSide(
+            color: highContrast ? Colors.white : lavenderMain,
+            width: 5,
+          ),
+          top: BorderSide(color: borderColor),
+          right: BorderSide(color: borderColor),
+          bottom: BorderSide(color: borderColor),
         ),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: highContrast ? Colors.white : lavenderLight,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              'Pergunta ${globalIndex + 1} de ${questions.length}',
+              style: TextStyle(
+                color: highContrast ? Colors.black : lavenderDark,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
           Text(
             '${globalIndex + 1}. ${question.title}',
-            style: const TextStyle(
-              color: Color(0xFF332033),
+            style: TextStyle(
+              color: primaryText,
               fontSize: 16,
               fontWeight: FontWeight.w800,
               height: 1.35,
@@ -737,12 +920,24 @@ class _QuizPageState extends State<QuizPage> {
                           : isSelected
                               ? Icons.radio_button_checked_rounded
                               : Icons.radio_button_off_rounded,
-                      color: isSelected
-                          ? const Color(0xFFC54E82)
-                          : const Color(0xFFCBD0D6),
+                      color: highContrast
+                          ? Colors.white
+                          : isSelected
+                              ? lavenderMain
+                              : const Color(0xFFCBD0D6),
                     ),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(option.title)),
+                    Expanded(
+                      child: Text(
+                        option.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: primaryText,
+                          fontWeight:
+                              isSelected ? FontWeight.w800 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -756,13 +951,23 @@ class _QuizPageState extends State<QuizPage> {
   Widget _buildFooter() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-      color: const Color(0xFFFFF7FB),
+      color: pageBackground,
       child: Row(
         children: [
           if (currentPage > 0)
             Expanded(
               child: OutlinedButton(
                 onPressed: previousPage,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: highContrast ? Colors.white : lavenderDark,
+                  side: BorderSide(
+                    color: highContrast ? Colors.white : lavenderMain,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
                 child: const Text('← Voltar'),
               ),
             ),
@@ -770,6 +975,18 @@ class _QuizPageState extends State<QuizPage> {
           Expanded(
             child: ElevatedButton(
               onPressed: canGoNext ? nextPage : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: highContrast ? Colors.white : lavenderMain,
+                foregroundColor: highContrast ? Colors.black : Colors.white,
+                disabledBackgroundColor:
+                    highContrast ? Colors.grey : lavenderBorder,
+                disabledForegroundColor:
+                    highContrast ? Colors.black : textMuted,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
               child: Text(isLastPage ? 'Gerar relatório' : 'Próximo →'),
             ),
           ),
