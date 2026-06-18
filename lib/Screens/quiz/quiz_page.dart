@@ -5,7 +5,9 @@ Autor: Silvano Malfatti
 Data: 13/06/2026
  */
 
+
 import 'package:flutter/material.dart';
+
 import '../../Models/question.dart';
 import '../../common/app_routes.dart';
 import 'question_widget.dart';
@@ -46,9 +48,6 @@ class _QuizPageState extends State<QuizPage> {
     super.dispose();
   }
 
-  // =========================
-  // FIRST PAGE
-  // =========================
   Future<void> _loadFirstPage() async {
     final result = await _server.fetchQuestions(1);
 
@@ -66,15 +65,11 @@ class _QuizPageState extends State<QuizPage> {
     });
   }
 
-  // =========================
-  // SCROLL
-  // =========================
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_isLoadingNextPage) return;
 
     final position = _scrollController.position;
-
     const threshold = 250.0;
 
     if (position.pixels >= position.maxScrollExtent - threshold) {
@@ -82,9 +77,6 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  // =========================
-  // NEXT PAGE
-  // =========================
   Future<void> _loadNextPage() async {
     if (_isLoadingNextPage) return;
     if (_currentPage >= _lastPage) return;
@@ -95,7 +87,6 @@ class _QuizPageState extends State<QuizPage> {
 
     try {
       final nextPage = _currentPage + 1;
-
       final result = await _server.fetchQuestions(nextPage);
 
       if (!mounted) return;
@@ -103,7 +94,6 @@ class _QuizPageState extends State<QuizPage> {
       setState(() {
         _currentPage = result.page;
         _lastPage = result.lastPage;
-
         _questions.addAll(result.questions);
       });
     } finally {
@@ -115,18 +105,12 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  // =========================
-  // SCORE UPDATE
-  // =========================
-  void _addScore(int score) {
+  void _updateScore(int delta) {
     setState(() {
-      _totalScore += score;
+      _totalScore += delta;
     });
   }
 
-  // =========================
-  // NAV RESULT
-  // =========================
   void _onShowResult() {
     Navigator.pushNamed(
       context,
@@ -135,72 +119,179 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
-  // =========================
-  // BUILD
-  // =========================
+  int get _answeredQuestions {
+    return _questions.where((question) => question.selectedAnswer != null).length;
+  }
+
+  double get _progress {
+    if (_questions.isEmpty) return 0;
+    return _answeredQuestions / _questions.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color(0xFFFFF7FB),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF7B2D8B),
+          ),
+        ),
       );
     }
 
-    final isLastPage = _currentPage == _lastPage;
+    final bool isLastPage = _currentPage == _lastPage;
 
-    final baseCount = _questions.length;
-    final showLoadingCell = _isLoadingNextPage;
-    final showResultButton = isLastPage;
+    final int baseCount = _questions.length;
+    final bool showLoadingCell = _isLoadingNextPage;
+    final bool showResultButton = isLastPage;
 
-    final totalItems = baseCount +
+    final int totalItems = baseCount +
         (showLoadingCell ? 1 : 0) +
         (showResultButton ? 1 : 0);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF7FB),
       appBar: AppBar(
-        title: Text('Page $_currentPage / $_lastPage'),
+        title: const Text('Avaliação de Risco'),
       ),
-      body: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: totalItems,
-        itemBuilder: (context, index) {
-          // LOADING CELL
-          if (showLoadingCell && index == baseCount) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              itemCount: totalItems,
+              itemBuilder: (context, index) {
+                if (showLoadingCell && index == baseCount) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF7B2D8B),
+                      ),
+                    ),
+                  );
+                }
 
-          // RESULT BUTTON
-          final resultIndex = baseCount + (showLoadingCell ? 1 : 0);
+                final int resultIndex = baseCount + (showLoadingCell ? 1 : 0);
 
-          if (showResultButton && index == resultIndex) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: _onShowResult,
-                  child: const Text('Resultado'),
-                ),
-              ),
-            );
-          }
+                if (showResultButton && index == resultIndex) {
+                  return _buildResultButton();
+                }
 
-          // QUESTION
-          final question = _questions[index];
+                final question = _questions[index];
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: QuestionWidget(
-              question: question,
-              onChanged: (answer) {
-                _addScore(answer.score);
+                return QuestionWidget(
+                  question: question,
+                  onScoreDelta: _updateScore,
+                );
               },
             ),
-          );
-        },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF7B2D8B),
+            Color(0xFFD81B60),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFD81B60).withOpacity(0.20),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Sua segurança importa',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Responda com calma para receber uma orientação inicial sobre o nível de risco.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              height: 1.35,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: _progress,
+              minHeight: 8,
+              backgroundColor: Colors.white.withOpacity(0.25),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$_answeredQuestions de ${_questions.length} perguntas respondidas',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultButton() {
+    final bool canShowResult = _answeredQuestions == _questions.length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        children: [
+          if (!canShowResult)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Responda todas as perguntas para visualizar o resultado.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF6B5A70),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: canShowResult ? _onShowResult : null,
+              icon: const Icon(Icons.insights_rounded),
+              label: const Text('Ver resultado'),
+            ),
+          ),
+        ],
       ),
     );
   }
