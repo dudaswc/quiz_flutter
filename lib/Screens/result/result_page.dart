@@ -6,6 +6,7 @@ Autor: Silvano Malfatti
 Data: 13/06/2026
  */
 
+
 import 'package:flutter/material.dart';
 import '../../common/app_routes.dart';
 
@@ -39,7 +40,7 @@ class ResultPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: const Text('Relatório AR PAX'),
+        title: const Text('Relatório de Risco'),
         foregroundColor: Colors.white,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -56,19 +57,17 @@ class ResultPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            const SizedBox(height: 16),
-            _buildResultTable(
-              vulnerability,
-              threat,
-              risk,
-              classification,
-              classColor,
-            ),
+            _buildHero(classification, risk, classColor),
             const SizedBox(height: 16),
             _buildIdentificationCard(identified, userData),
-            const SizedBox(height: 24),
-            _buildExplanation(),
+            const SizedBox(height: 16),
+            _buildRiskIndicators(vulnerability, threat, risk),
+            const SizedBox(height: 16),
+            _buildInterpretation(classification),
+            const SizedBox(height: 16),
+            _buildRecommendations(classification),
+            const SizedBox(height: 16),
+            _buildEmergencyCard(),
             const SizedBox(height: 24),
             _buildQuestionnaire(answers),
             const SizedBox(height: 24),
@@ -106,119 +105,129 @@ class ResultPage extends StatelessWidget {
     }
   }
 
-  Widget _buildHeader() {
+  IconData _classificationIcon(String value) {
+    switch (value) {
+      case 'Muito Baixo':
+      case 'Baixo':
+        return Icons.check_circle_rounded;
+      case 'Moderado':
+        return Icons.warning_amber_rounded;
+      case 'Alto':
+        return Icons.report_problem_rounded;
+      case 'Extremo':
+        return Icons.emergency_rounded;
+      default:
+        return Icons.shield_rounded;
+    }
+  }
+
+  Widget _buildHero(String classification, double risk, Color classColor) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [lavenderDark, lavender, babyPink],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
             color: Color(0x337E6BC4),
-            blurRadius: 20,
-            offset: Offset(0, 8),
+            blurRadius: 22,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'desperte mulher',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.w900,
             ),
           ),
-          SizedBox(height: 12),
-          Text(
-            'Relatório de Análise de Risco – AR PAX',
-            textAlign: TextAlign.center,
+          const SizedBox(height: 14),
+          const Text(
+            'Relatório de Análise de Risco',
             style: TextStyle(
               color: Colors.white,
               fontSize: 21,
               fontWeight: FontWeight.w900,
             ),
           ),
-          SizedBox(height: 6),
-          Text(
-            'Formulário Nacional de Avaliação de Riscos — Violência Doméstica e Familiar Contra a Mulher',
-            textAlign: TextAlign.center,
+          const SizedBox(height: 8),
+          const Text(
+            'Baseado no Formulário Nacional de Avaliação de Riscos e estruturado a partir da lógica AR PAX.',
             style: TextStyle(
               color: Colors.white,
+              fontSize: 14,
               height: 1.35,
               fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResultTable(
-    double vulnerability,
-    double threat,
-    double risk,
-    String classification,
-    Color classColor,
-  ) {
-    return _Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Resultado da Avaliação',
-            style: TextStyle(
-              color: lavenderDark,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
-          ),
-          const SizedBox(height: 14),
-          _ResultRow(
-            label: 'Nível de Vulnerabilidade:',
-            value: '${vulnerability.toStringAsFixed(2)} %',
-          ),
-          _ResultRow(
-            label: 'Nível de Ameaça:',
-            value: '${threat.toStringAsFixed(2)} %',
-          ),
-          _ResultRow(
-            label: 'Grau de Risco:',
-            value: '${risk.toStringAsFixed(2)} %',
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Classificação de Risco:',
-                  style: TextStyle(
-                    color: textSecondary,
-                    fontWeight: FontWeight.w600,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: classColor,
+                    shape: BoxShape.circle,
                   ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: BoxDecoration(
-                  color: classColor,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  classification,
-                  style: const TextStyle(
+                  child: Icon(
+                    _classificationIcon(classification),
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    size: 28,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Classificação de risco',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        classification,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Grau calculado: ${risk.toStringAsFixed(2)}%',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -230,71 +239,196 @@ class ResultPage extends StatelessWidget {
     Map<String, dynamic>? userData,
   ) {
     return _Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Identificação',
-            style: TextStyle(
-              color: lavenderDark,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 10),
-          if (!identified)
-            const Text(
-              'Relatório gerado de forma anônima.',
+      icon: Icons.lock_outline_rounded,
+      title: 'Identificação',
+      child: identified
+          ? Column(
+              children: [
+                _InfoRow(label: 'Nome', value: userData?['name'] ?? 'Não informado'),
+                _InfoRow(label: 'Documento', value: userData?['document'] ?? 'Não informado'),
+              ],
+            )
+          : const Text(
+              'Relatório gerado de forma anônima. Nenhum dado pessoal foi informado antes da emissão do relatório.',
               style: TextStyle(
                 color: textSecondary,
+                height: 1.45,
                 fontWeight: FontWeight.w600,
               ),
-            )
-          else ...[
-            _ResultRow(
-              label: 'Nome:',
-              value: userData?['name'] ?? 'Não informado',
             ),
-            _ResultRow(
-              label: 'Documento:',
-              value: userData?['document'] ?? 'Não informado',
-            ),
-          ],
+    );
+  }
+
+  Widget _buildRiskIndicators(
+    double vulnerability,
+    double threat,
+    double risk,
+  ) {
+    return _Card(
+      icon: Icons.insights_rounded,
+      title: 'Indicadores de risco',
+      child: Column(
+        children: [
+          _ProgressMetric(
+            label: 'Vulnerabilidade da vítima',
+            value: vulnerability,
+            color: lavender,
+          ),
+          const SizedBox(height: 14),
+          _ProgressMetric(
+            label: 'Ameaça do agressor',
+            value: threat,
+            color: babyPink,
+          ),
+          const SizedBox(height: 14),
+          _ProgressMetric(
+            label: 'Grau geral de risco',
+            value: risk,
+            color: lavenderDark,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildExplanation() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'O presente relatório possui caráter técnico, informativo e não vinculante, destinando-se a subsidiar profissionais da rede de proteção às vítimas de violência doméstica, da Segurança Pública e do Sistema de Justiça na análise de fatores de risco e no apoio à tomada de decisões.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: textPrimary,
-            fontWeight: FontWeight.w800,
-            height: 1.45,
-          ),
+  Widget _buildInterpretation(String classification) {
+    return _Card(
+      icon: Icons.psychology_alt_rounded,
+      title: 'Leitura interpretativa',
+      child: Text(
+        _interpretationText(classification),
+        style: const TextStyle(
+          color: textSecondary,
+          height: 1.5,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
         ),
-        SizedBox(height: 22),
-        Text(
-          'A Análise de Risco Pax (AR Pax) é uma metodologia utilizada para qualificar tecnicamente o processo decisório sobre medidas protetivas de urgência. O modelo parte do Formulário Nacional de Avaliação de Risco e transforma as respostas em uma estimativa baseada em dois pilares: vulnerabilidade da vítima e ameaça do agressor.',
-          style: TextStyle(
-            color: textPrimary,
-            height: 1.45,
-          ),
+      ),
+    );
+  }
+
+  String _interpretationText(String classification) {
+    switch (classification) {
+      case 'Muito Baixo':
+        return 'As respostas indicam baixa presença de fatores associados à ameaça e à vulnerabilidade. Ainda assim, o relatório recomenda atenção a mudanças de comportamento, controle, isolamento ou ameaças futuras.';
+      case 'Baixo':
+        return 'Foram identificados sinais iniciais de risco, mas sem concentração elevada de fatores críticos. A situação deve ser acompanhada e a rede de apoio deve ser fortalecida.';
+      case 'Moderado':
+        return 'O resultado demonstra presença relevante de fatores de risco. A combinação entre vulnerabilidade e ameaça exige atenção, orientação especializada e planejamento preventivo.';
+      case 'Alto':
+        return 'As respostas indicam fatores importantes de agravamento, como ameaça, controle, agressões ou intensificação da violência. Recomenda-se busca imediata por apoio e orientação da rede de proteção.';
+      case 'Extremo':
+        return 'O resultado aponta combinação intensa de ameaça e vulnerabilidade. Nessa classificação, a prioridade é a proteção imediata, acionamento da rede de apoio e, em caso de perigo atual, contato com serviços de emergência.';
+      default:
+        return 'O relatório apresenta uma leitura técnica e informativa dos fatores declarados durante o preenchimento da avaliação.';
+    }
+  }
+
+  Widget _buildRecommendations(String classification) {
+    final recommendations = _recommendationsByRisk(classification);
+
+    return _Card(
+      icon: Icons.checklist_rounded,
+      title: 'Recomendações iniciais',
+      child: Column(
+        children: recommendations.map((item) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: lavenderDark,
+                  size: 20,
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    item,
+                    style: const TextStyle(
+                      color: textSecondary,
+                      height: 1.4,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  List<String> _recommendationsByRisk(String classification) {
+    switch (classification) {
+      case 'Muito Baixo':
+      case 'Baixo':
+        return [
+          'Observar possíveis mudanças de comportamento, controle ou ameaça.',
+          'Manter contato com pessoas de confiança.',
+          'Buscar orientação caso a situação se intensifique.',
+        ];
+      case 'Moderado':
+        return [
+          'Fortalecer a rede de apoio familiar, comunitária ou institucional.',
+          'Registrar episódios de ameaça, agressão ou controle.',
+          'Buscar orientação especializada em serviços de proteção à mulher.',
+          'Evitar lidar sozinha com situações de conflito ou tensão.',
+        ];
+      case 'Alto':
+        return [
+          'Procurar atendimento especializado o quanto antes.',
+          'Considerar solicitação de medida protetiva, quando aplicável.',
+          'Ligar 180 para orientação sobre violência contra a mulher.',
+          'Em caso de perigo imediato, ligar 190.',
+        ];
+      case 'Extremo':
+        return [
+          'Priorizar a saída para um local seguro.',
+          'Acionar imediatamente uma pessoa de confiança.',
+          'Ligar 190 em caso de risco atual ou iminente.',
+          'Buscar suporte em delegacia, serviço de saúde ou assistência social.',
+        ];
+      default:
+        return [
+          'Buscar orientação caso exista medo, ameaça ou situação de violência.',
+        ];
+    }
+  }
+
+  Widget _buildEmergencyCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [babyPinkLight, Color(0xFFF7EEFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        SizedBox(height: 12),
-        Text(
-          'Muito Baixo: correlação mínima entre vulnerabilidade e ameaça. Baixo: sem correlação significativa. Moderado: presença de potencial razoável de evento adverso. Alto: potencial significativo para ocorrência ou agravamento. Extremo: ameaça e vulnerabilidade muito altas, com necessidade de ação imediata.',
-          style: TextStyle(
-            color: textPrimary,
-            height: 1.45,
+        border: Border.all(color: border),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Canais de apoio',
+            style: TextStyle(
+              color: textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
           ),
-        ),
-      ],
+          SizedBox(height: 12),
+          _EmergencyItem(number: '190', label: 'Polícia Militar — emergência'),
+          _EmergencyItem(number: '180', label: 'Central de Atendimento à Mulher'),
+          _EmergencyItem(number: '192', label: 'SAMU — urgência médica'),
+          _EmergencyItem(number: '197', label: 'Polícia Civil'),
+        ],
+      ),
     );
   }
 
@@ -314,7 +448,7 @@ class ResultPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Text(
-            'Questionário',
+            'Resumo das respostas',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -365,9 +499,15 @@ class ResultPage extends StatelessWidget {
 }
 
 class _Card extends StatelessWidget {
+  final IconData icon;
+  final String title;
   final Widget child;
 
-  const _Card({required this.child});
+  const _Card({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -377,7 +517,7 @@ class _Card extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: ResultPage.border),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: const [
           BoxShadow(
             color: Color(0x147E6BC4),
@@ -386,16 +526,47 @@ class _Card extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [ResultPage.lavender, ResultPage.babyPink],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: Colors.white, size: 21),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: ResultPage.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
     );
   }
 }
 
-class _ResultRow extends StatelessWidget {
+class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ResultRow({
+  const _InfoRow({
     required this.label,
     required this.value,
   });
@@ -413,18 +584,124 @@ class _ResultRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              label,
+              '$label:',
               style: const TextStyle(
                 color: ResultPage.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: ResultPage.textPrimary,
-              fontWeight: FontWeight.w900,
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: ResultPage.textPrimary,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressMetric extends StatelessWidget {
+  final String label;
+  final double value;
+  final Color color;
+
+  const _ProgressMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = (value / 100).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: ResultPage.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            Text(
+              '${value.toStringAsFixed(2)}%',
+              style: const TextStyle(
+                color: ResultPage.textPrimary,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: normalized,
+            minHeight: 10,
+            backgroundColor: ResultPage.border,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmergencyItem extends StatelessWidget {
+  final String number;
+  final String label;
+
+  const _EmergencyItem({
+    required this.number,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [ResultPage.lavenderDark, ResultPage.babyPink],
+              ),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              number,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: ResultPage.textSecondary,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -490,3 +767,10 @@ class _GradientButton extends StatelessWidget {
     );
   }
 }
+       
+        
+           
+        
+
+
+  
