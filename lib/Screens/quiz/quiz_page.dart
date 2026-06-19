@@ -48,28 +48,20 @@ class _QuizPageState extends State<QuizPage> {
 
   final Map<int, Set<int>> selectedAnswers = {};
 
-  static const Color lavenderBackground = Color(0xFFFAF7FF);
-  static const Color lavenderDark = Color(0xFF6D5D8F);
-  static const Color lavenderMain = Color(0xFF8E7AB5);
-  static const Color lavenderLight = Color(0xFFEDE7F6);
-  static const Color lavenderBorder = Color(0xFFE3D8F1);
-  static const Color textDark = Color(0xFF2F2638);
-  static const Color textMuted = Color(0xFF675A73);
+  static const Color background = Color(0xFFFCFAFF);
+  static const Color lavenderDark = Color(0xFF7E6BC4);
+  static const Color lavender = Color(0xFFA78BFA);
+  static const Color babyPink = Color(0xFFF4C2D7);
+  static const Color babyPinkLight = Color(0xFFFBE4EE);
+  static const Color border = Color(0xFFE9DDF7);
+  static const Color textPrimary = Color(0xFF2F2638);
+  static const Color textSecondary = Color(0xFF6C6480);
 
-  Color get pageBackground =>
-      highContrast ? Colors.black : lavenderBackground;
-
-  Color get cardBackground =>
-      highContrast ? Colors.black : Colors.white;
-
-  Color get primaryText =>
-      highContrast ? Colors.white : textDark;
-
-  Color get secondaryText =>
-      highContrast ? Colors.white70 : textMuted;
-
-  Color get borderColor =>
-      highContrast ? Colors.white : lavenderBorder;
+  Color get pageBackground => highContrast ? Colors.black : background;
+  Color get cardBackground => highContrast ? Colors.black : Colors.white;
+  Color get primaryText => highContrast ? Colors.white : textPrimary;
+  Color get secondaryText => highContrast ? Colors.white70 : textSecondary;
+  Color get borderColor => highContrast ? Colors.white : border;
 
   final List<RiskQuestion> questions = const [
     RiskQuestion(
@@ -306,7 +298,6 @@ class _QuizPageState extends State<QuizPage> {
   ];
 
   int get totalPages => (questions.length / 5).ceil();
-
   bool get isLastPage => currentPage == totalPages - 1;
 
   List<RiskQuestion> get visibleQuestions {
@@ -324,7 +315,6 @@ class _QuizPageState extends State<QuizPage> {
         return false;
       }
     }
-
     return true;
   }
 
@@ -370,13 +360,11 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   double get riskPercent {
-    return ((threatPercent * 0.6) + (vulnerabilityPercent * 0.4))
-        .clamp(0, 100);
+    return ((threatPercent * 0.6) + (vulnerabilityPercent * 0.4)).clamp(0, 100);
   }
 
   String get classification {
     final risk = riskPercent;
-
     if (risk < 20) return 'Muito Baixo';
     if (risk < 40) return 'Baixo';
     if (risk < 60) return 'Moderado';
@@ -400,12 +388,8 @@ class _QuizPageState extends State<QuizPage> {
         return;
       }
 
-      final exclusiveIndex =
-          question.options.indexWhere((item) => item.exclusive);
-
-      if (exclusiveIndex != -1) {
-        current.remove(exclusiveIndex);
-      }
+      final exclusiveIndex = question.options.indexWhere((item) => item.exclusive);
+      if (exclusiveIndex != -1) current.remove(exclusiveIndex);
 
       if (current.contains(optionIndex)) {
         current.remove(optionIndex);
@@ -447,23 +431,16 @@ class _QuizPageState extends State<QuizPage> {
       return;
     }
 
-    setState(() {
-      currentPage++;
-    });
+    setState(() => currentPage++);
   }
 
   void previousPage() {
     if (currentPage == 0) return;
-
-    setState(() {
-      currentPage--;
-    });
+    setState(() => currentPage--);
   }
 
   void toggleContrast() {
-    setState(() {
-      highContrast = !highContrast;
-    });
+    setState(() => highContrast = !highContrast);
   }
 
   void _quickExit() {
@@ -472,9 +449,7 @@ class _QuizPageState extends State<QuizPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Saída rápida'),
-          content: const Text(
-            'Deseja sair imediatamente da avaliação?',
-          ),
+          content: const Text('Deseja sair imediatamente da avaliação?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -506,10 +481,8 @@ class _QuizPageState extends State<QuizPage> {
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
           decoration: BoxDecoration(
-            color: highContrast ? Colors.black : lavenderBackground,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(28),
-            ),
+            color: highContrast ? Colors.black : background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -518,14 +491,14 @@ class _QuizPageState extends State<QuizPage> {
                 width: 42,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: highContrast ? Colors.white : lavenderBorder,
+                  color: highContrast ? Colors.white : border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
               const SizedBox(height: 20),
               Icon(
                 Icons.lock_outline_rounded,
-                color: highContrast ? Colors.white : lavenderMain,
+                color: highContrast ? Colors.white : lavender,
                 size: 42,
               ),
               const SizedBox(height: 14),
@@ -549,20 +522,17 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               const SizedBox(height: 22),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.resultPage,
-                      arguments: resultArguments,
-                    );
-                  },
-                  icon: const Icon(Icons.visibility_off_rounded),
-                  label: const Text('Continuar anônima'),
-                ),
+              _GradientButton(
+                text: 'Continuar anônima',
+                icon: Icons.visibility_off_rounded,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.resultPage,
+                    arguments: resultArguments,
+                  );
+                },
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -575,10 +545,9 @@ class _QuizPageState extends State<QuizPage> {
                   icon: const Icon(Icons.person_outline_rounded),
                   label: const Text('Quero me identificar'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor:
-                        highContrast ? Colors.white : lavenderMain,
+                    foregroundColor: highContrast ? Colors.white : lavenderDark,
                     side: BorderSide(
-                      color: highContrast ? Colors.white : lavenderMain,
+                      color: highContrast ? Colors.white : lavender,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
@@ -610,10 +579,8 @@ class _QuizPageState extends State<QuizPage> {
           child: Container(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
             decoration: BoxDecoration(
-              color: highContrast ? Colors.black : lavenderBackground,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
-              ),
+              color: highContrast ? Colors.black : background,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -665,33 +632,30 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      final updatedArguments = {
-                        ...resultArguments,
-                        'identified': true,
-                        'userData': {
-                          'name': nameController.text.trim().isEmpty
-                              ? 'Não informado'
-                              : nameController.text.trim(),
-                          'document': documentController.text.trim().isEmpty
-                              ? 'Não informado'
-                              : documentController.text.trim(),
-                        },
-                      };
+                _GradientButton(
+                  text: 'Gerar relatório identificado',
+                  icon: Icons.description_rounded,
+                  onTap: () {
+                    final updatedArguments = {
+                      ...resultArguments,
+                      'identified': true,
+                      'userData': {
+                        'name': nameController.text.trim().isEmpty
+                            ? 'Não informado'
+                            : nameController.text.trim(),
+                        'document': documentController.text.trim().isEmpty
+                            ? 'Não informado'
+                            : documentController.text.trim(),
+                      },
+                    };
 
-                      Navigator.pop(context);
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.resultPage,
-                        arguments: updatedArguments,
-                      );
-                    },
-                    icon: const Icon(Icons.description_rounded),
-                    label: const Text('Gerar relatório identificado'),
-                  ),
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.resultPage,
+                      arguments: updatedArguments,
+                    );
+                  },
                 ),
                 TextButton(
                   onPressed: () {
@@ -720,14 +684,23 @@ class _QuizPageState extends State<QuizPage> {
       backgroundColor: pageBackground,
       appBar: AppBar(
         title: const Text('Avaliação de Risco'),
-        backgroundColor: highContrast ? Colors.black : lavenderDark,
         foregroundColor: Colors.white,
+        backgroundColor: highContrast ? Colors.black : lavenderDark,
+        flexibleSpace: highContrast
+            ? null
+            : Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [lavenderDark, lavender, babyPink],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
         actions: [
           IconButton(
             tooltip: 'Alto contraste',
-            icon: Icon(
-              highContrast ? Icons.contrast : Icons.contrast_outlined,
-            ),
+            icon: Icon(highContrast ? Icons.contrast : Icons.contrast_outlined),
             onPressed: toggleContrast,
           ),
           IconButton(
@@ -766,15 +739,24 @@ class _QuizPageState extends State<QuizPage> {
         gradient: highContrast
             ? null
             : const LinearGradient(
-                colors: [lavenderDark, lavenderMain],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                colors: [lavenderDark, lavender, babyPink],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
         color: highContrast ? Colors.black : null,
         border: Border.all(
           color: highContrast ? Colors.white : Colors.transparent,
         ),
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: highContrast
+            ? []
+            : const [
+                BoxShadow(
+                  color: Color(0x337E6BC4),
+                  blurRadius: 20,
+                  offset: Offset(0, 8),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -783,7 +765,7 @@ class _QuizPageState extends State<QuizPage> {
             'Formulário Nacional de Avaliação de Riscos',
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
               fontSize: 16,
             ),
           ),
@@ -800,19 +782,18 @@ class _QuizPageState extends State<QuizPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: highContrast
-                  ? Border.all(color: Colors.white)
-                  : null,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.22),
+                  Colors.white.withOpacity(0.10),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: highContrast ? Border.all(color: Colors.white) : null,
             ),
             child: const Row(
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  color: Colors.white,
-                  size: 18,
-                ),
+                Icon(Icons.lock_outline, color: Colors.white, size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -834,7 +815,7 @@ class _QuizPageState extends State<QuizPage> {
               value: progress,
               minHeight: 8,
               backgroundColor: Colors.white.withOpacity(0.25),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: const AlwaysStoppedAnimation<Color>(babyPinkLight),
             ),
           ),
           const SizedBox(height: 8),
@@ -856,94 +837,139 @@ class _QuizPageState extends State<QuizPage> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: cardBackground,
-        border: Border(
-          left: BorderSide(
-            color: highContrast ? Colors.white : lavenderMain,
-            width: 5,
-          ),
-          top: BorderSide(color: borderColor),
-          right: BorderSide(color: borderColor),
-          bottom: BorderSide(color: borderColor),
-        ),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor),
+        boxShadow: highContrast
+            ? []
+            : const [
+                BoxShadow(
+                  color: Color(0x1A7E6BC4),
+                  blurRadius: 14,
+                  offset: Offset(0, 8),
+                ),
+              ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: highContrast ? Colors.white : lavenderLight,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              'Pergunta ${globalIndex + 1} de ${questions.length}',
-              style: TextStyle(
-                color: highContrast ? Colors.black : lavenderDark,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 6,
+              decoration: BoxDecoration(
+                gradient: highContrast
+                    ? null
+                    : const LinearGradient(
+                        colors: [lavenderDark, babyPink],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                color: highContrast ? Colors.white : null,
               ),
             ),
-          ),
-          Text(
-            '${globalIndex + 1}. ${question.title}',
-            style: TextStyle(
-              color: primaryText,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 14),
-          ...List.generate(question.options.length, (optionIndex) {
-            final option = question.options[optionIndex];
-            final isSelected = selected.contains(optionIndex);
-
-            return InkWell(
-              onTap: () => toggleAnswer(globalIndex, optionIndex),
+            Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      question.multiple
-                          ? isSelected
-                              ? Icons.check_box_rounded
-                              : Icons.check_box_outline_blank_rounded
-                          : isSelected
-                              ? Icons.radio_button_checked_rounded
-                              : Icons.radio_button_off_rounded,
-                      color: highContrast
-                          ? Colors.white
-                          : isSelected
-                              ? lavenderMain
-                              : const Color(0xFFCBD0D6),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: highContrast
+                            ? null
+                            : const LinearGradient(
+                                colors: [Color(0xFFEDE7F6), babyPinkLight],
+                              ),
+                        color: highContrast ? Colors.white : null,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                       child: Text(
-                        option.title,
+                        'Pergunta ${globalIndex + 1} de ${questions.length}',
                         style: TextStyle(
-                          fontSize: 15,
-                          color: primaryText,
-                          fontWeight:
-                              isSelected ? FontWeight.w800 : FontWeight.w500,
+                          color: highContrast ? Colors.black : lavenderDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
                         ),
                       ),
                     ),
+                    Text(
+                      '${globalIndex + 1}. ${question.title}',
+                      style: TextStyle(
+                        color: primaryText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    ...List.generate(question.options.length, (optionIndex) {
+                      final option = question.options[optionIndex];
+                      final isSelected = selected.contains(optionIndex);
+
+                      return InkWell(
+                        onTap: () => toggleAnswer(globalIndex, optionIndex),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? (highContrast ? Colors.white12 : babyPinkLight)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            border: isSelected
+                                ? Border.all(
+                                    color: highContrast ? Colors.white : babyPink,
+                                  )
+                                : null,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                question.multiple
+                                    ? isSelected
+                                        ? Icons.check_box_rounded
+                                        : Icons.check_box_outline_blank_rounded
+                                    : isSelected
+                                        ? Icons.radio_button_checked_rounded
+                                        : Icons.radio_button_off_rounded,
+                                color: highContrast
+                                    ? Colors.white
+                                    : isSelected
+                                        ? lavenderDark
+                                        : const Color(0xFFB8AEC9),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  option.title,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: primaryText,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w800
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
-            );
-          }),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -961,7 +987,7 @@ class _QuizPageState extends State<QuizPage> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: highContrast ? Colors.white : lavenderDark,
                   side: BorderSide(
-                    color: highContrast ? Colors.white : lavenderMain,
+                    color: highContrast ? Colors.white : lavender,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -973,24 +999,90 @@ class _QuizPageState extends State<QuizPage> {
             ),
           if (currentPage > 0) const SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
-              onPressed: canGoNext ? nextPage : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: highContrast ? Colors.white : lavenderMain,
-                foregroundColor: highContrast ? Colors.black : Colors.white,
-                disabledBackgroundColor:
-                    highContrast ? Colors.grey : lavenderBorder,
-                disabledForegroundColor:
-                    highContrast ? Colors.black : textMuted,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(999),
-                ),
+            child: Opacity(
+              opacity: canGoNext ? 1 : 0.5,
+              child: _GradientButton(
+                text: isLastPage ? 'Gerar relatório' : 'Próximo →',
+                icon: isLastPage ? Icons.description_rounded : Icons.arrow_forward_rounded,
+                onTap: canGoNext ? nextPage : null,
+                highContrast: highContrast,
               ),
-              child: Text(isLastPage ? 'Gerar relatório' : 'Próximo →'),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GradientButton extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool highContrast;
+
+  const _GradientButton({
+    required this.text,
+    required this.icon,
+    required this.onTap,
+    this.highContrast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+        decoration: BoxDecoration(
+          gradient: highContrast || onTap == null
+              ? null
+              : const LinearGradient(
+                  colors: [
+                    Color(0xFF7E6BC4),
+                    Color(0xFFA78BFA),
+                    Color(0xFFF4C2D7),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+          color: highContrast
+              ? Colors.white
+              : onTap == null
+                  ? const Color(0xFFE9DDF7)
+                  : null,
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: highContrast || onTap == null
+              ? []
+              : const [
+                  BoxShadow(
+                    color: Color(0x337E6BC4),
+                    blurRadius: 14,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: highContrast ? Colors.black : Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: TextStyle(
+                color: highContrast ? Colors.black : Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
